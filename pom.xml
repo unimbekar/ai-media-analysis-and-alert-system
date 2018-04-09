@@ -13,6 +13,4 @@
         <module>consumer</module>
         <module>client</module>
     </modules>
-
-
 </project>
