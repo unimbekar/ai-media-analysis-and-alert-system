@@ -48,7 +48,7 @@ public final class PlayMKVStreamFromLocalDir {
     private static final String STREAM_NAME = "play-mkv-stream";
 
     /* sample MKV file */
-    private static final String MKV_FILE_PATH = "src/main/resources/data/mkv/clusters.mkv";
+    private static final String MKV_FILE_PATH = "producer/src/main/resources/data/mkv/clusters.mkv";
 //    big_buck_bunny_480p_h264.mkv does NOT work. errorCode=MORE_THAN_ONE_TRACK_FOUND
 //    private static final String MKV_FILE_PATH = "src/main/resources/data/mkv/big_buck_bunny_480p_h264.mkv";
 
@@ -64,7 +64,8 @@ public final class PlayMKVStreamFromLocalDir {
     private PlayMKVStreamFromLocalDir() { }
     public static void main(final String[] args) throws Exception {
         final AmazonKinesisVideo frontendClient = AmazonKinesisVideoAsyncClient.builder()
-                .withCredentials(AuthHelper.getSystemPropertiesCredentialsProvider())
+//                .withCredentials(AuthHelper.getSystemPropertiesCredentialsProvider())
+                .withCredentials(AuthHelper.getDefaultPropertiesCredentialsProvider())
                 .withRegion(DEFAULT_REGION)
                 .build();
 
@@ -89,7 +90,8 @@ public final class PlayMKVStreamFromLocalDir {
             final AmazonKinesisVideoPutMedia dataClient = AmazonKinesisVideoPutMediaClient.builder()
                     .withRegion(DEFAULT_REGION)
                     .withEndpoint(URI.create(dataEndpoint))
-                    .withCredentials(AuthHelper.getSystemPropertiesCredentialsProvider())
+//                .withCredentials(AuthHelper.getSystemPropertiesCredentialsProvider())
+                    .withCredentials(AuthHelper.getDefaultPropertiesCredentialsProvider())
                     .withConnectionTimeoutInMillis(CONNECTION_TIMEOUT_IN_MILLIS)
                     .build();
 
