@@ -67,6 +67,8 @@ public class KinesisFrameConsumerToS3Sender extends AbstractFrameExtractorConsum
                         "img"+frameCount+".jpg",
                         inputStream,
                         objectMetadata));
+
+        LOG.info("Sending FRAME# " + frameCount);
     }
 
 	@Override

@@ -45,10 +45,10 @@ public final class PlayMKVStreamFromLocalDir {
     private static final String PUT_MEDIA_API = "/putMedia";
 
     /* the name of the stream */
-    private static final String STREAM_NAME = "play-mkv-stream";
+    private static final String STREAM_NAME = System.getProperty("stream.name", "play-mkv-stream");
 
     /* sample MKV file */
-    private static final String MKV_FILE_PATH = "producer/src/main/resources/data/mkv/clusters.mkv";
+    private static final String MKV_FILE_PATH = System.getProperty("movie.path", "producer/src/main/resources/data/mkv/clusters.mkv");
 //    big_buck_bunny_480p_h264.mkv does NOT work. errorCode=MORE_THAN_ONE_TRACK_FOUND
 //    private static final String MKV_FILE_PATH = "src/main/resources/data/mkv/big_buck_bunny_480p_h264.mkv";
 
