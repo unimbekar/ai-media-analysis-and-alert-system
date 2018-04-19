@@ -13,7 +13,7 @@ import com.amazonaws.services.s3.model.PutObjectRequest;
 import com.example.aws.kinesisvideo.base.AbstractFrameExtractorConsumer;
 import com.example.aws.kinesisvideo.base.AbstractKinesisVideoConsumer;
 import com.example.aws.kinesisvideo.image.utils.ImageUtils;
-import com.example.aws.kinesisvideo.utils.s3.S3Utils;
+import com.example.aws.kinesisvideo.utils.S3Utils;
 
 public class FrameFileStoreConsumer extends AbstractFrameExtractorConsumer {
 

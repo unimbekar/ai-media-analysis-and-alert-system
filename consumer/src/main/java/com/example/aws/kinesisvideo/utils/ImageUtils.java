@@ -1,4 +1,4 @@
-package com.example.aws.kinesisvideo.utils.s3.image;
+package com.example.aws.kinesisvideo.utils;
 
 import org.json.JSONObject;
 

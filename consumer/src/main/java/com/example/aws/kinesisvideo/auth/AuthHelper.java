@@ -1,4 +1,4 @@
-package com.amazonaws.kinesisvideo.demoapp.auth;
+package com.example.aws.kinesisvideo.auth;
 
 import com.amazonaws.auth.AWSCredentialsProvider;
 import com.amazonaws.auth.InstanceProfileCredentialsProvider;

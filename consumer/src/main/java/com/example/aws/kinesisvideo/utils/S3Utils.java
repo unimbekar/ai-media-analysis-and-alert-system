@@ -1,15 +1,24 @@
-package com.example.aws.kinesisvideo.utils.s3;
+package com.example.aws.kinesisvideo.utils;
 
 import com.amazonaws.AmazonClientException;
 import com.amazonaws.AmazonServiceException;
 import com.amazonaws.auth.AWSCredentials;
-import com.amazonaws.auth.AWSStaticCredentialsProvider;
+import com.amazonaws.auth.AWSCredentialsProvider;
+import com.amazonaws.auth.DefaultAWSCredentialsProviderChain;
 import com.amazonaws.auth.profile.ProfileCredentialsProvider;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.AmazonS3ClientBuilder;
 import com.amazonaws.services.s3.model.*;
+import com.amazonaws.services.s3.model.DeleteObjectsRequest.KeyVersion;
+import com.amazonaws.services.s3.transfer.Download;
+import com.amazonaws.services.s3.transfer.TransferManager;
+import com.amazonaws.services.s3.transfer.Upload;
+import com.example.aws.kinesisvideo.common.Constants;
+import org.apache.commons.lang3.StringUtils;
 
 import java.io.*;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
 /**
@@ -26,13 +35,22 @@ import java.util.UUID;
  * <p>
  * <b>WARNING:</b> To avoid accidental leakage of your credentials, DO NOT keep
  * the credentials file in your source directory.
- *
+ * <p>
  * http://aws.amazon.com/security-credentials
  */
 public class S3Utils {
 
     private static AWSCredentials credentials = null;
     private static AmazonS3 s3 = null;
+    private static final String LOG_TAG = "S3Store";
+    private static String bucketName = Constants.S3_BUCKET_NAME;
+    private String bucket = null;
+    private String key = null;
+    private static String SAGE_BUCKET = "sage-media-bucket";
+    private static String CLUSTER_MKV_KEY = "demo/mkv/clusters.mkv";
+    private static String JFISH_MKV_KEY = "demo/mkv/jfish.mkv";
+    private static String MKV_DOWNLOAD_PATH = "/tmp/s3/downloads/clusters.mkv";
+
     static {
         try {
             /*
@@ -49,10 +67,21 @@ public class S3Utils {
                     e);
         }
 
+//        AmazonS3ClientBuilder.standard()
+        AWSCredentialsProvider awsCredentials = new DefaultAWSCredentialsProviderChain();
         s3 = AmazonS3ClientBuilder.standard()
-                .withCredentials(new AWSStaticCredentialsProvider(credentials))
-                .withRegion("us-east-1")
+                .withCredentials(awsCredentials)
+                .withRegion(Constants.DEFAULT_REGION)
                 .build();
+
+//        s3 = AmazonS3Client.builder()
+//                .withCredentials(AuthHelper.getDefaultPropertiesCredentialsProvider())
+//                .withCredentials(AuthHelper.getInstanceProfieCredentialsProvider())
+//                .withRegion(Constants.DEFAULT_REGION)
+//                .build();
+////                .withCredentials(new AWSStaticCredentialsProvider(credentials))
+////                .withRegion("us-east-1")
+////                .build();
     }
 
     public static AWSCredentials getCredentials() {
@@ -66,9 +95,26 @@ public class S3Utils {
     public S3Utils() {
     }
 
-//    public static
+    public S3Utils(String bucket) {
+        this.bucket = bucket;
+    }
 
-    public static void main(String[] args) throws IOException {
+    public S3Utils(String bucket, String key) {
+        this.bucket = bucket;
+        this.key = key;
+    }
+
+    public static void main(String[] args) {
+        S3Utils s3Utils = new S3Utils(SAGE_BUCKET);
+        try {
+            s3Utils.downloadFromS3(JFISH_MKV_KEY, null);
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw new RuntimeException(e);
+        }
+    }
+
+    public static void testS3Apis() throws IOException {
 
 //        AWSCredentials credentials = null;
 //        try {
@@ -139,7 +185,7 @@ public class S3Utils {
              */
             System.out.println("Downloading an object");
             S3Object object = s3.getObject(new GetObjectRequest(bucketName, key));
-            System.out.println("Content-Type: "  + object.getObjectMetadata().getContentType());
+            System.out.println("Content-Type: " + object.getObjectMetadata().getContentType());
             displayTextInputStream(object.getObjectContent());
 
             /*
@@ -195,7 +241,6 @@ public class S3Utils {
      * to Amazon S3
      *
      * @return A newly created temporary file with text data.
-     *
      * @throws IOException
      */
     private static File createSampleFile() throws IOException {
@@ -216,9 +261,7 @@ public class S3Utils {
     /**
      * Displays the contents of the specified input stream as text.
      *
-     * @param input
-     *            The input stream to display as text.
-     *
+     * @param input The input stream to display as text.
      * @throws IOException
      */
     private static void displayTextInputStream(InputStream input) throws IOException {
@@ -232,4 +275,56 @@ public class S3Utils {
         System.out.println();
     }
 
+
+    public String downloadFromS3(String key, String downloadFilePath) throws Exception {
+//        LogUtils.debug(LOG_TAG, "Downloading file: " + key);
+        TransferManager tm = new TransferManager(new DefaultAWSCredentialsProviderChain());
+        // TransferManager processes all transfers asynchronously,
+        // so this call will return immediately.
+        File downloadedFile = null;
+        if(StringUtils.isEmpty(downloadFilePath))
+            downloadedFile = new File(Constants.S3_WORKING_DIR + "/" + key);
+        else
+            downloadedFile = new File(downloadFilePath);
+
+        downloadedFile.getParentFile().mkdirs();
+        downloadedFile.createNewFile();
+        Download download = tm.download(bucket, key, downloadedFile);
+        download.waitForCompletion();
+
+//        LogUtils.debug(LOG_TAG, "Successfully downloaded file from bucket.\nName: " + key + "\nBucket name: " +
+//                bucket);
+        tm.shutdownNow();
+        return downloadedFile.getAbsolutePath();
+    }
+
+    public void uploadToS3(String key) throws Exception {
+        File file = new File(key);
+//        LogUtils.debug(LOG_TAG, "Uploading new file. Name: " + key);
+        TransferManager tm = new TransferManager(new DefaultAWSCredentialsProviderChain());
+        // TransferManager processes all transfers asynchronously,
+        // so this call will return immediately.
+        Upload upload = tm.upload(bucket, key, file);
+        upload.waitForCompletion();
+//        LogUtils.debug(LOG_TAG, "Successfully uploaded. File : " + key + "\nBucket name: " +
+//                bucket);
+        tm.shutdownNow();
+    }
+
+    public void remove(String accessKey) throws Exception {
+        LogUtils.debug(LOG_TAG, "Deleting file with access key: " + accessKey);
+//        AmazonS3 s3Client = new AmazonS3Client(new DefaultAWSCredentialsProviderChain());
+        AmazonS3 s3Client = getS3();
+        DeleteObjectsRequest multiObjectDeleteRequest = new DeleteObjectsRequest(bucket);
+
+        List<KeyVersion> keys = new ArrayList<KeyVersion>();
+        keys.add(new KeyVersion(accessKey));
+        keys.add(new KeyVersion(accessKey + "_key"));
+
+        multiObjectDeleteRequest.setKeys(keys);
+
+        s3Client.deleteObjects(multiObjectDeleteRequest);
+
+        LogUtils.debug(LOG_TAG, "Deleted file with access key: " + accessKey);
+    }
 }

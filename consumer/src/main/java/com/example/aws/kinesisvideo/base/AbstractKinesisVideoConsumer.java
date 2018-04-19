@@ -21,8 +21,7 @@ import com.amazonaws.services.kinesisvideo.model.StartSelectorType;
 public abstract class AbstractKinesisVideoConsumer {
 
 	protected static final String REGION = System.getProperty("region", "us-east-1");
-//	protected static final String STREAM_NAME = System.getProperty("stream.name", "tokyo-video-stream-1");
-	protected static final String STREAM_NAME = System.getProperty("stream.name", "play-mkv-stream");
+	protected static final String STREAM_NAME = System.getProperty("stream.name", "my-mkv-stream");
 	private static final long GETMEDIA_INTERVAL = Integer.parseInt(System.getProperty("getmedia.interval", "3000"));
 	protected static final Log LOG = LogFactory.getLog(AbstractKinesisVideoConsumer.class);
 
