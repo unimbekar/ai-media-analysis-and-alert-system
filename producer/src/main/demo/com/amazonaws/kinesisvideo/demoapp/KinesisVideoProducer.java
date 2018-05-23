@@ -70,7 +70,8 @@ public final class KinesisVideoProducer {
     private static final int READ_TIMEOUT_IN_MILLIS = 1_000_000;
 
     /* connect timeout */
-    private static final int CONNECTION_TIMEOUT_IN_MILLIS = 10_000;
+//    private static final int CONNECTION_TIMEOUT_IN_MILLIS = 100_000;
+    private static final int CONNECTION_TIMEOUT_IN_MILLIS = Integer.parseInt(System.getProperty("connect.timeout", "100000"));
 
     private static String mkvFilePath = DEFAULT_MKV_FILE_PATH;
 
@@ -82,6 +83,7 @@ public final class KinesisVideoProducer {
         System.out.println("STREAM_NAME: " + STREAM_NAME);
         System.out.println("S3_DOWNLOAD_DIR: " + S3_DOWNLOAD_DIR);
         System.out.println("MKV_FILE_PATH: " + mkvFilePath);
+        System.out.println("CONNECTION_TIMEOUT_IN_MILLIS: " + CONNECTION_TIMEOUT_IN_MILLIS);
     }
 
     public static void main(final String[] args) throws Exception {
